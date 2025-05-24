@@ -16,8 +16,8 @@ if __name__ == "__main__":
     parser.add_argument("--listen")
     parser.add_argument("--create_topic")
     parser.add_argument("--topic")  # for testing tcp client
-    parser.add_argument("--server")  # for testing tcp server
-    parser.add_argument("--client")  # for testing tcp client
+    parser.add_argument("--server", action="store_true")  # for testing tcp server
+    parser.add_argument("--list_topics", action="store_true")
     args = parser.parse_args()
     tr = TopicRegistry()
     s = Server(topic_registry=tr)
@@ -25,6 +25,12 @@ if __name__ == "__main__":
         s.run()
 
     else:
+        if args.list_topics:  # TODO
+            action = {"action": "list", "name": "empty"}
+            client = Client()
+            client.send_action(action)
+            logger.info(f"Sent action {action}..")
+
         if args.create_topic:
             action = {"action": "create", "name": args.create_topic.strip()}
             client = Client()

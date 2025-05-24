@@ -15,7 +15,7 @@ class TopicRegistry:
 
     def handle_action(
         self, action_msg: str
-    ) -> None | bool:  # TODO: change action to enum
+    ) -> None | bool | List[Any]:  # TODO: change action to enum
         """
         handles actions like create, delete, etc.. for topics
         schema: {'action': 'create', 'name': 'topic_name'}
@@ -28,6 +28,11 @@ class TopicRegistry:
         if action == "create":
             self.add_to_store(topic=Topic(name=str(name)))
             logger.info(f"Finished processing action {action}")
+
+        if action == "list":
+            logger.debug("Got list action")
+            logger.info(f"returning {len(self.topics)} topics")
+            return self.topics
 
         if action == "check":
             logger.debug(f"Checking if topic {name} exists...")
@@ -67,6 +72,10 @@ class TopicRegistry:
             raise TopicNotFoundException(f"Topic {topic_name} does not exist")
         else:
             yield self._store.get(topic_name)
+
+    @property
+    def topics(self):
+        return [topic for topic in self._store.keys()]
 
     @property
     def store(self):

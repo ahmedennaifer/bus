@@ -64,7 +64,7 @@ class Server:
                             logging.info("Got action!")
                             result = self._topic_registry.handle_action(action_dict)
 
-                            if action_dict["action"] == "check":
+                            if action_dict["action"] in ["check", "list"]:
                                 response = str(result)
                                 client_socket.send(response.encode("utf-8"))
                             else:

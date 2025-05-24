@@ -1,5 +1,4 @@
 from src.topic.topic import Topic
-from src.registry.topic_registry import TopicRegistry
 from src.messages.messages import Message
 from src.errors.topic import TopicNotFoundException
 from typing import List
@@ -20,9 +19,9 @@ class Publisher:
         """publish msg to topic(s) and set publisher field in msg"""
         for topic in topics:
             exists = self._client.check_topic_exists(topic.name)
-            print("printing exists....", exists)
             if not exists:
                 raise TopicNotFoundException(f"Topic {topic} does not exist!")
+
             message._publisher = self.name
             self._client.send(message)
             logger.debug(

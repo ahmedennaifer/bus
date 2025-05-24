@@ -66,7 +66,7 @@ class Client:
             logging.error(f"Error sending message: {e}")
             self.disconnect()
 
-    def check_topic_exists(self, topic_name: str) -> str:
+    def check_topic_exists(self, topic_name: str) -> bool:
         if not self._is_connected:
             logging.debug("Client isn't connected to server")
             self._connect_to_server()
@@ -76,9 +76,11 @@ class Client:
             check_request = json.dumps({"action": "check", "name": topic_name})
             self._socket.send(check_request.encode("utf-8"))
             results = self._socket.recv(1024).decode("utf-8")
-            return results
+            return results.strip() == "True"
+
         except Exception as e:
             logging.error(f"Cannot check if topic {topic_name} exists: {e}")
+            return False
 
     def send(self, msg: Message) -> None:
         if not isinstance(msg, Message):

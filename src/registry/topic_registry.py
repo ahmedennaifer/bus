@@ -31,7 +31,6 @@ class TopicRegistry:
 
         if action == "check":
             logger.debug(f"Checking if topic {name} exists...")
-            print("-----store got:", self._store.get(name))
             if self._store.get(name) is None:
                 return False
             return True
@@ -46,11 +45,8 @@ class TopicRegistry:
             raise TopicNotFoundException(
                 f"Topic {message._topic} does not exist in the registry"
             )
-        print("gotten passed the not exist exception")
-        print("printing topics..")
-        print("topic:", self._store.get(message._topic))
         self._store[message._topic].append(message)
-        print("added to store")
+        logger.debug(f"added message to store: {message}")
 
     def add_to_store(self, topic: Topic) -> None:
         if not isinstance(topic, Topic):

@@ -8,7 +8,9 @@ Supports:
 - communication via tcp (no protocol yet)
 
 Usage:
-```bash usage: main.py [-h] [--listen LISTEN] [--create_topic CREATE_TOPIC] [--server]
+```bash
+
+usage: main.py [-h] [--listen LISTEN] [--create_topic CREATE_TOPIC] [--server]
                [--list_topics]
 
 options:
@@ -17,4 +19,5 @@ options:
   --create_topic CREATE_TOPIC
                         creates a new topic
   --server              runs a tcp server for the broker
-  --list_topics         list created topics```
+  --list_topics         list created topics
+```

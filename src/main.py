@@ -13,11 +13,14 @@ from src.utils.logger import logger
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--listen")
-    parser.add_argument("--create_topic")
-    parser.add_argument("--topic")  # for testing tcp client
-    parser.add_argument("--server", action="store_true")  # for testing tcp server
-    parser.add_argument("--list_topics", action="store_true")
+    parser.add_argument("--listen", help="shows messages from a topic")  # TODO
+    parser.add_argument("--create_topic", help="creates a new topic")
+    parser.add_argument(
+        "--server", action="store_true", help="runs a tcp server for the broker"
+    )
+    parser.add_argument(
+        "--list_topics", action="store_true", help="list created topics"
+    )
     args = parser.parse_args()
     tr = TopicRegistry()
     s = Server(topic_registry=tr)

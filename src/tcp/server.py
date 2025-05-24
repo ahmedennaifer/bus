@@ -1,6 +1,7 @@
 import socket
 import logging
 import time
+import json
 
 from src.registry.topic_registry import TopicRegistry
 from src.messages.messages import Message
@@ -55,9 +56,21 @@ class Server:
                     if decoded_client_data.startswith("{'topic'"):
                         msg = Message.from_json(decoded_client_data)
                         self._topic_registry.handle_message(msg)
-                    elif decoded_client_data.startswith("'action'"):
+                    elif decoded_client_data.startswith("{'action'"):
+                        action_dict = json.loads(decoded_client_data)
                         logging.info("Got action!")
-                        self._topic_registry.handle_action(decoded_client_data)
+                        maybe_exists_request = self._topic_registry.handle_action(
+                            action_dict
+                        )  # check if action is check exists
+                        print("-----Maybe exists request:", maybe_exists_request)
+                        if maybe_exists_request:
+                            try:
+                                client_socket.send(
+                                    str(maybe_exists_request).encode("utf-8")
+                                )
+                            except Exception as e:
+                                logging.error(f"Error sending check result: {e}")
+
                     try:
                         client_socket.send("message received".encode("utf-8"))
                     except Exception as e:

@@ -10,22 +10,21 @@ from src.tcp.client import Client
 
 
 class Publisher:
-    def __init__(self, name: str, registry: TopicRegistry) -> None:
+    def __init__(self, name: str) -> None:
         super().__init__()
         self.name = name
         self._topics = []
-        self._topic_store = registry._store
         self._client = Client()
 
     def publish(self, message: Message, topics: List[Topic]):
         """publish msg to topic(s) and set publisher field in msg"""
         for topic in topics:
-            if not self._topic_store.get(topic.name):
-                logger.error(f"tried to publish to topic {topic} which does not exist")
-                raise TopicNotFoundException
-            else:
-                message._publisher = self.name
-                self._client.send(message)
-                logger.debug(
-                    f"Publisher {self.name} published message: {message} to topic {topic}"
-                )
+            exists = self._client.check_topic_exists(topic.name)
+            print("printing exists....", exists)
+            if not exists:
+                raise TopicNotFoundException(f"Topic {topic} does not exist!")
+            message._publisher = self.name
+            self._client.send(message)
+            logger.debug(
+                f"Publisher {self.name} published message: {message} to topic {topic}"
+            )

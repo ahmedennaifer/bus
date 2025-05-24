@@ -13,11 +13,14 @@ class TopicRegistry:
             str, List[Message]
         ] = {}  # in memory store of topics : {'topic_name': [messages]}
 
-    def handle_action(self, action_msg: str) -> None:  # TODO: change action to enum
+    def handle_action(
+        self, action_msg: str
+    ) -> None | bool:  # TODO: change action to enum
         """
         handles actions like create, delete, etc.. for topics
         schema: {'action': 'create', 'name': 'topic_name'}
-        actions : create, destroy, ...
+        actions : create, destroy, check (if topic exists) ...
+        returns none or bool for exists
         """
         logger.info(f"Got action {action_msg}. Processing...")
         action = action_msg["action"]  # pyright: ignore
@@ -25,6 +28,13 @@ class TopicRegistry:
         if action == "create":
             self.add_to_store(topic=Topic(name=str(name)))
             logger.info(f"Finished processing action {action}")
+
+        if action == "check":
+            logger.debug(f"Checking if topic {name} exists...")
+            print("-----store got:", self._store.get(name))
+            if self._store.get(name) is None:
+                return False
+            return True
 
     def handle_message(self, message: Message) -> None:
         """routes a message to its topic"""

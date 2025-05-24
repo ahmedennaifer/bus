@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
             print("stores:", tr.store)
 
-            pb = Publisher("test_publisher", tr)
+            pb = Publisher("test_publisher")
             n = 0
             while True:
                 msg = Message(topic=tpc.name, data=f"test data {n}")

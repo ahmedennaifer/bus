@@ -5,11 +5,15 @@ from errors.topic import TopicAlreadyExistsException, TopicNotFoundException
 
 
 from src.utils.logger import logger
+from src.tcp.server import Server
 
 
-class TopicRegistry:
+class TopicRegistry(Server):
     def __init__(self):
-        self._store: Dict[str, List[Message]] = {}
+        super().__init__()
+        self._store: Dict[
+            str, List[Message]
+        ] = {}  # in memory store of topics : {'topic_name': [messages]}
 
     def add_to_store(self, topic: Topic) -> None:
         if not isinstance(topic, Topic):
@@ -34,3 +38,7 @@ class TopicRegistry:
     @property
     def topics(self) -> Dict[str, List[Message]]:
         return self._store
+
+    @property
+    def messages(self):
+        return self._raw_messages

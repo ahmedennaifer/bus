@@ -1,0 +1,3 @@
+class ClientAlreadyConnectedException(Exception):
+    pass
+

@@ -1,7 +1,7 @@
 from typing import Any
 from src.topic.topic import Topic
 import time
-
+import json
 from uuid import uuid1, UUID
 
 
@@ -11,7 +11,17 @@ class Message:
         self._data: str = data
         self._timestamp: Any = time.time()
         self._id: UUID = uuid1()
-        self._publisher = None
+        self._publisher: str = ""
+
+    def to_json(self):
+        msg = {
+            "topic": self._topic.name,
+            "data": self._data,
+            "timestamp": self._timestamp,
+            "id": str(self._id),
+            "publisher": self._publisher,
+        }
+        return json.dumps(msg)
 
     def __repr__(self) -> str:
         return f"Message(id:{self._id}, topic:{self._topic}, data: {self._data}, time: {self._timestamp})"

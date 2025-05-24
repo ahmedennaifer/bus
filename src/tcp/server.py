@@ -44,34 +44,39 @@ class Server:
                 client_socket, client_address = self._socket.accept()
                 logging.info(f"Connection established with client {client_address}")
                 while True:
-                    client_data = client_socket.recv(self._BUFFER_SIZE)
-                    if not client_data:  # avoid permanent empty buffers
-                        break
-                    logging.info(
-                        f"[SERVER] Received {client_data.decode('utf-8')}. Sending response..."
-                    )
-                    decoded_client_data = client_data.decode(
-                        "utf-8"
-                    )  # TODO: add protocol for actions and/or messages
-                    if decoded_client_data.startswith('{"topic"'):
-                        msg = Message.from_json(decoded_client_data)
-                        self._topic_registry.handle_message(msg)
-                    elif decoded_client_data.startswith('{"action"'):
-                        action_dict = json.loads(decoded_client_data)
-                        logging.info("Got action!")
+                    try:
+                        client_data = client_socket.recv(self._BUFFER_SIZE)
+                        if not client_data:  # avoid permanent empty buffers
+                            break
+                        logging.info(
+                            f"[SERVER] Received {client_data.decode('utf-8')}. Sending response..."
+                        )
+                        decoded_client_data = client_data.decode(
+                            "utf-8"
+                        )  # TODO: add protocol for actions and/or messages
+                        if decoded_client_data.startswith('{"topic"'):
+                            msg = Message.from_json(decoded_client_data)
+                            self._topic_registry.handle_message(msg)
+                            client_socket.send("message received".encode("utf-8"))
 
-                        result = self._topic_registry.handle_action(action_dict)
+                        elif decoded_client_data.startswith('{"action"'):
+                            action_dict = json.loads(decoded_client_data)
+                            logging.info("Got action!")
+                            result = self._topic_registry.handle_action(action_dict)
 
-                        if action_dict["action"] == "check":
-                            response = str(result)
-                            client_socket.send(response.encode("utf-8"))
+                            if action_dict["action"] == "check":
+                                response = str(result)
+                                client_socket.send(response.encode("utf-8"))
+                            else:
+                                client_socket.send("action completed".encode("utf-8"))
+
                         else:
-                            client_socket.send("action completed".encode("utf-8"))
+                            client_socket.send("message received".encode("utf-8"))
+                    except Exception as e:
+                        logging.error(f"Error sending msg to client: {e}")
+                        break
 
-                    else:
-                        client_socket.send("message received".encode("utf-8"))
-            except Exception as e:
-                logging.error(f"Error sending msg to client: {e}")
+                client_socket.close()
 
             except KeyboardInterrupt:
                 logging.info("Server shutting down...")

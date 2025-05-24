@@ -80,6 +80,7 @@ class Client:
 
         except Exception as e:
             logging.error(f"Cannot check if topic {topic_name} exists: {e}")
+            self.disconnect()
             return False
 
     def send(self, msg: Message) -> None:

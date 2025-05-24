@@ -9,12 +9,13 @@ from src.utils.logger import logger
 from src.tcp.client import Client
 
 
-class Publisher(Client):
+class Publisher:
     def __init__(self, name: str, registry: TopicRegistry) -> None:
         super().__init__()
         self.name = name
         self._topics = []
         self._topic_store = registry._store
+        self._client = Client()
 
     def publish(self, message: Message, topics: List[Topic]):
         """publish msg to topic(s) and set publisher field in msg"""
@@ -24,7 +25,7 @@ class Publisher(Client):
                 raise TopicNotFoundException
             else:
                 message._publisher = self.name
-                self.send(message)
+                self._client.send(message)
                 logger.debug(
                     f"Publisher {self.name} published message: {message} to topic {topic}"
                 )

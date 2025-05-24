@@ -1,7 +1,10 @@
 from src.errors.tcp import ClientAlreadyConnectedException
 from src.messages.messages import Message
+from typing import Dict
+
 
 import socket
+import json
 import logging
 
 logging.basicConfig(
@@ -45,9 +48,27 @@ class Client:
         self._is_connected = False
         logging.info("Client disconnected")
 
+    def send_action(
+        self, action: Dict[str, str]
+    ):  # TODO: add proper action integration
+        if not self._is_connected:
+            logging.debug("Client isn't connected to server")
+            self._connect_to_server()
+            logging.info("Client Connected")
+
+        encoded_action = json.dumps(action).encode("utf-8")
+        try:
+            self._socket.send(encoded_action)
+            logging.info(f"[CLIENT] Client sent action: {action}")
+            response = self._socket.recv(1024).decode("utf-8")
+            logging.info(f"[SERVER] {response}")
+        except Exception as e:
+            logging.error(f"Error sending message: {e}")
+            self.disconnect()
+
     def send(self, msg: Message) -> None:
         if not isinstance(msg, Message):
-            raise Exception("Send only accepts `Message` format!")
+            raise Exception("Send only accepts `Message` or `Action` format!")
 
         if not self._is_connected:
             logging.debug("Client isn't connected to server")

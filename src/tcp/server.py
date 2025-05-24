@@ -2,6 +2,9 @@ import socket
 import logging
 import time
 
+from src.registry.topic_registry import TopicRegistry
+from src.messages.messages import Message
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -9,14 +12,20 @@ logging.basicConfig(
 
 
 class Server:
-    def __init__(self, host="localhost", port=8080, buffer_size=1024):
+    def __init__(
+        self,
+        topic_registry: TopicRegistry,
+        host="localhost",
+        port=8080,
+        buffer_size=1024,
+    ):
         self._host = host
         self._port = port
         self._BUFFER_SIZE = buffer_size
         # AF_INET = ipv4, SOCK_STREAM = tcp
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._init()
-        self._raw_messages = []
+        self._topic_registry = topic_registry
 
     def _init(self):
         logging.debug("Initializing server...")
@@ -40,7 +49,15 @@ class Server:
                     logging.info(
                         f"[SERVER] Receieved {client_data.decode('utf-8')}. Sending response..."
                     )
-                    self._raw_messages.append(client_data)
+                    decoded_client_data = client_data.decode(
+                        "utf-8"
+                    )  # TODO: add protocol for actions and/or messages
+                    if decoded_client_data.startswith("{'topic'"):
+                        msg = Message.from_json(decoded_client_data)
+                        self._topic_registry.handle_message(msg)
+                    elif decoded_client_data.startswith("'action'"):
+                        logging.info("Got action!")
+                        self._topic_registry.handle_action(decoded_client_data)
                     try:
                         client_socket.send("message received".encode("utf-8"))
                     except Exception as e:

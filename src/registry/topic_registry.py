@@ -5,15 +5,42 @@ from errors.topic import TopicAlreadyExistsException, TopicNotFoundException
 
 
 from src.utils.logger import logger
-from src.tcp.server import Server
 
 
-class TopicRegistry(Server):
+class TopicRegistry:
     def __init__(self):
-        super().__init__()
         self._store: Dict[
             str, List[Message]
         ] = {}  # in memory store of topics : {'topic_name': [messages]}
+
+    def handle_action(self, action_msg: str) -> None:  # TODO: change action to enum
+        """
+        handles actions like create, delete, etc.. for topics
+        schema: {'action': 'create', 'name': 'topic_name'}
+        actions : create, destroy, ...
+        """
+        logger.info(f"Got action {action_msg}. Processing...")
+        action = action_msg["action"]  # pyright: ignore
+        name = action_msg["name"]  # pyright: ignore
+        if action == "create":
+            self.add_to_store(topic=Topic(name=str(name)))
+            logger.info(f"Finished processing action {action}")
+
+    def handle_message(self, message: Message) -> None:
+        """routes a message to its topic"""
+        logger.info(f"Routing message {message}...")
+        if not isinstance(message, Message):
+            raise TypeError("Message shoud be of type `Message`")
+
+        if self._store.get(message._topic) is None:
+            raise TopicNotFoundException(
+                f"Topic {message._topic} does not exist in the registry"
+            )
+        print("gotten passed the not exist exception")
+        print("printing topics..")
+        print("topic:", self._store.get(message._topic))
+        self._store[message._topic].append(message)
+        print("added to store")
 
     def add_to_store(self, topic: Topic) -> None:
         if not isinstance(topic, Topic):
@@ -36,9 +63,5 @@ class TopicRegistry(Server):
             yield self._store.get(topic_name)
 
     @property
-    def topics(self) -> Dict[str, List[Message]]:
+    def store(self):
         return self._store
-
-    @property
-    def messages(self):
-        return self._raw_messages

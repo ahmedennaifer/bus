@@ -40,6 +40,12 @@ class TopicRegistry:
                 return False
             return True
 
+        if action == "listen":
+            logger.debug("Got listen action")
+            if self._store.get(name) is None:
+                raise TopicNotFoundException(f"Topic {name} does not exist")
+            return self.listen_to_topic(name)
+
     def handle_message(self, message: Message) -> None:
         """routes a message to its topic"""
         logger.info(f"Routing message {message}...")
@@ -71,7 +77,7 @@ class TopicRegistry:
         if self._store.get(topic_name) is None:
             raise TopicNotFoundException(f"Topic {topic_name} does not exist")
         else:
-            yield self._store.get(topic_name)
+            return self._store.get(topic_name)
 
     @property
     def topics(self):

@@ -1,8 +1,10 @@
 from src.errors.tcp import ClientAlreadyConnectedException
+from src.errors.topic import TopicNotFoundException
 from src.messages.messages import Message
-from typing import Dict
+from typing import Dict, List
 
 
+import time
 import socket
 import json
 import logging
@@ -61,7 +63,8 @@ class Client:
             self._socket.send(encoded_action)
             logging.info(f"[CLIENT] Client sent action: {action}")
             response = self._socket.recv(1024).decode("utf-8")
-            logging.info(f"[SERVER] {response}")
+            print(f"[RESPONSE] {response}")
+            logging.debug(f"[SERVER] {response}")
         except Exception as e:
             logging.error(f"Error sending message: {e}")
             self.disconnect()
@@ -82,6 +85,24 @@ class Client:
             logging.error(f"Cannot check if topic {topic_name} exists: {e}")
             self.disconnect()
             return False
+
+    def listen_to_topic(self, topic_name: str, listen_action) -> List[Message]:
+        exists_action = {"action": "check", "name": topic_name}
+        topic_exists = self.send_action(exists_action)
+        if not topic_exists:
+            logging.error(
+                f"Failed listening to topic: Topic {topic_name} does not exist"
+            )
+            raise TopicNotFoundException(f"Topic {topic_name} does not exist!")
+        try:
+            self._socket.send(listen_action.encode("utf-8"))
+            logging.debug("sent listen action")
+            messages = self._socket.recv(1024).decode("utf-8")
+            for msg in messages:
+                print(msg)
+                time.sleep(0.3)
+        except Exception as e:
+            logging.error(f"Failed retrieving messages from topic {topic_name}: {e}")
 
     def send(self, msg: Message) -> None:
         if not isinstance(msg, Message):

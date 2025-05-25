@@ -15,6 +15,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--listen", help="shows messages from a topic")  # TODO
     parser.add_argument("--create_topic", help="creates a new topic")
+    parser.add_argument("--topic", help="publish to a topic")
     parser.add_argument(
         "--server", action="store_true", help="runs a tcp server for the broker"
     )
@@ -22,13 +23,13 @@ if __name__ == "__main__":
         "--list_topics", action="store_true", help="list created topics"
     )
     args = parser.parse_args()
-    tr = TopicRegistry()
-    s = Server(topic_registry=tr)
     if args.server:
+        tr = TopicRegistry()
+        s = Server(topic_registry=tr)
         s.run()
 
     else:
-        if args.list_topics:  # TODO
+        if args.list_topics:
             action = {"action": "list", "name": "empty"}
             client = Client()
             client.send_action(action)
@@ -40,11 +41,16 @@ if __name__ == "__main__":
             client.send_action(action)
             logger.info(f"Sent action {action}..")
 
+        if args.listen:
+            topic = args.listen.strip()
+            action = {"action": "listen", "name": topic}
+            msgs = client.listen_to_topic(topic)
+            for msg in msgs:
+                print(msg)
+                time.sleep(0.3)
+
         if args.topic:
             tpc = Topic(name=args.topic.strip())
-
-            print("stores:", tr.store)
-
             pb = Publisher("test_publisher")
             n = 0
             while True:
@@ -52,4 +58,3 @@ if __name__ == "__main__":
                 pb.publish(msg, [tpc])
                 time.sleep(1)
                 n += 1
-                print(f"Messages stored in tr: {tr.store}")

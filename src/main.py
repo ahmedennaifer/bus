@@ -1,6 +1,7 @@
 import time
 import argparse
 
+from threading import Thread
 
 from src.messages.messages import Message
 from src.publisher.publisher import Publisher
@@ -23,38 +24,38 @@ if __name__ == "__main__":
         "--list_topics", action="store_true", help="list created topics"
     )
     args = parser.parse_args()
-    if args.server:
-        tr = TopicRegistry()
-        s = Server(topic_registry=tr)
-        s.run()
+    tr = TopicRegistry()
+    s = Server(topic_registry=tr)
+    thread = Thread(target=s.run)
+    thread.start()
 
-    else:
-        if args.list_topics:
-            action = {"action": "list", "name": "empty"}
-            client = Client()
-            client.send_action(action)
-            logger.info(f"Sent action {action}..")
+    if args.list_topics:
+        action = {"action": "list", "name": "empty"}
+        client = Client()
+        client.send_action(action)
+        logger.info(f"Sent action {action}..")
 
-        if args.create_topic:
-            action = {"action": "create", "name": args.create_topic.strip()}
-            client = Client()
-            client.send_action(action)
-            logger.info(f"Sent action {action}..")
+    if args.create_topic:
+        action = {"action": "create", "name": args.create_topic.strip()}
+        client = Client()
+        client.send_action(action)
+        logger.info(f"Sent action {action}..")
 
-        if args.listen:
-            topic = args.listen.strip()
-            action = {"action": "listen", "name": topic}
-            msgs = client.listen_to_topic(topic)
-            for msg in msgs:
-                print(msg)
-                time.sleep(0.3)
+    if args.topic:
+        tpc = Topic(name=args.topic.strip())
+        pb = Publisher("test_publisher")
+        n = 0
+        while True:
+            msg = Message(topic=tpc.name, data=f"test data {n}")
+            pb.publish(msg, [tpc])
+            time.sleep(1)
+            n += 1
 
-        if args.topic:
-            tpc = Topic(name=args.topic.strip())
-            pb = Publisher("test_publisher")
-            n = 0
-            while True:
-                msg = Message(topic=tpc.name, data=f"test data {n}")
-                pb.publish(msg, [tpc])
-                time.sleep(1)
-                n += 1
+    if args.listen:
+        topic = args.listen.strip()
+        action = {"action": "listen", "name": topic}
+        msgs = tr.listen_to_topic(topic)
+        print("Msgs:", msgs)
+        for msg in msgs:
+            print(msg)
+            time.sleep(0.3)

@@ -37,7 +37,9 @@ class TopicRegistry:
         if action == "check":
             logger.debug(f"Checking if topic {name} exists...")
             if self._store.get(name) is None:
+                logger.debug(f"topic {name} does not exist")
                 return False
+            logger.debug(f"topic {name} exists")
             return True
 
         if action == "listen":

@@ -64,9 +64,16 @@ class Server:
                         response = str(result)
                         client_socket.send(response.encode("utf-8"))
 
-                    if action_dict["action"] == "listen":
-                        for msg in result:
-                            print(msg)
+                    elif action_dict["action"] == "listen":
+                        logging.info("[SERVER] got listen")
+                        topic_name = action_dict.get("name")
+                        logging.info(f"TOPIC NAME: {topic_name}")
+                        logging.debug("Returing messages from reg...")
+                        logging.info(
+                            f"LISTEN: len msgs: {len(self._topic_registry.listen_to_topic(topic_name))}"
+                        )
+
+                        return self._topic_registry.listen_to_topic(topic_name)
 
                     else:
                         client_socket.send("action completed".encode("utf-8"))

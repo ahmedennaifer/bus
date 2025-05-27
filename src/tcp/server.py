@@ -67,14 +67,14 @@ class Server:
                     elif action_dict["action"] == "listen":
                         logging.info("[SERVER] got listen")
                         topic_name = action_dict.get("name")
-                        logging.info(f"TOPIC NAME: {topic_name}")
-                        logging.debug("Returing messages from reg...")
-                        logging.info(
-                            f"LISTEN: len msgs: {len(self._topic_registry.listen_to_topic(topic_name))}"
-                        )
-
-                        return self._topic_registry.listen_to_topic(topic_name)
-
+                        try:
+                            msgs = self._topic_registry.listen_to_topic(topic_name)
+                            messages_str = "\n".join([str(msg) for msg in msgs])
+                            client_socket.send(messages_str.encode("utf-8"))
+                        except Exception as e:
+                            logging.error(
+                                f"Failed sending response to client {client_socket}: {e}"
+                            )
                     else:
                         client_socket.send("action completed".encode("utf-8"))
 

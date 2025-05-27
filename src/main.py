@@ -54,8 +54,6 @@ if __name__ == "__main__":
     if args.listen:
         topic = args.listen.strip()
         action = {"action": "listen", "name": topic}
-        msgs = tr.listen_to_topic(topic)
-        print("Msgs:", msgs)
-        for msg in msgs:
-            print(msg)
-            time.sleep(0.3)
+        print(action)
+        client = Client()
+        client.send_action(action)

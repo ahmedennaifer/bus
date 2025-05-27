@@ -1,8 +1,6 @@
 from src.errors.tcp import ClientAlreadyConnectedException
-from src.errors.topic import TopicNotFoundException
 from src.messages.messages import Message
 from typing import Dict
-from datetime import datetime
 
 import socket
 import json
@@ -52,9 +50,6 @@ class Client:
     def send_action(
         self, action: Dict[str, str]
     ) -> None:  # TODO: add proper action integration
-        kill = False  # for killing a connection to a sub
-        last_msg_received_time = None
-
         if not self._is_connected:
             logging.debug("Client isn't connected to server")
             self._connect_to_server()
@@ -67,24 +62,17 @@ class Client:
                     self._socket.send(encoded_action)
                     logging.info("Starting listening to topic...")
                     logging.info(f"[CLIENT] Client sent action: {action}")
-                    while not kill:  # TODO: make protocol handle when to kill
+                    while True:  # TODO: make protocol handle when to kill
                         response = self._socket.recv(1024).decode("utf-8")
-                        logging.info(
-                            f"[CLIENT] Received {response} from server at {datetime.now()}"
-                        )
-                        last_msg_received_time = datetime.now()
-                        if datetime.now() - last_msg_received_time >= 5:
-                            logging.info(f"No messages for 5sec. Killing...")
-                            kill = True
+                        print(f"[MESSAGE] {response}")
 
                 except Exception as e:
                     logging.error(f"Error sending listening action: {e}")
 
-            self._socket.send(encoded_action)
-            logging.info(f"[CLIENT] Client sent action: {action}")
-            response = self._socket.recv(4096).decode("utf-8")
-            logging.info(f"[RESPONSE] {response}")
-            logging.debug(f"[SERVER] {response}")
+            else:
+                self._socket.send(encoded_action)
+                response = self._socket.recv(4096).decode("utf-8")
+                logging.info(f"[RESPONSE] {response}")
         except Exception as e:
             logging.error(f"Error sending message: {e}")
             self.disconnect()
@@ -118,7 +106,6 @@ class Client:
         encoded_msg = msg.to_json().encode("utf-8")
         try:
             self._socket.send(encoded_msg)
-            logging.info(f"[CLIENT] Client sent msg: {msg}")
             response = self._socket.recv(4096).decode("utf-8")
             logging.info(f"[SERVER] {response}")
         except Exception as e:

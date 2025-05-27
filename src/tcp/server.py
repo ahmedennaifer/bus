@@ -21,7 +21,7 @@ class Server:
         topic_registry: TopicRegistry,
         host="localhost",
         port=8080,
-        buffer_size=4096,
+        buffer_size=1024,
     ):
         self._host = host
         self._port = port
@@ -72,16 +72,22 @@ class Server:
                         logging.info("[SERVER] got listen")
                         topic_name = action_dict.get("name")
                         try:
-                            msgs = self._topic_registry.listen_to_topic(topic_name)
-                            print("msgs: ", msgs)
-                            for msg in msgs:
-                                if isinstance(msg, EmptyMessage):
-                                    logging.info("Empty Message, Skipping....")
-                                    continue
-                                while msgs:
+                            while True:
+                                msgs = self._topic_registry.listen_to_topic(topic_name)
+                                if msgs:
+                                    if isinstance(msgs[0], EmptyMessage):
+                                        msgs.pop(0)
+                                        continue
+
+                                    msg = msgs.pop(0)
+                                    logging.info(f"[SERVER] Sending message {msg}...")
                                     msg_json = msg.to_json()
                                     client_socket.send(msg_json.encode("utf-8"))
-                                    msgs.remove(msg)
+                                    logging.info(f"[SERVER] Sent message {msg}")
+
+                                else:
+                                    logging.info("Waiting for messages...")
+                                    time.sleep(0.2)
 
                         except Exception as e:
                             logging.error(

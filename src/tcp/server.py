@@ -59,11 +59,13 @@ class Server:
 
                 elif decoded_client_data.startswith('{"action"'):
                     action_dict = json.loads(decoded_client_data)
-                    logging.info("Got action!")
+                    logging.info(f"Got action {action_dict}!")
                     result = self._topic_registry.handle_action(action_dict)
+                    logging.info(f"bool result: {result}")
 
                     if action_dict["action"] in ["check", "list"]:
                         response = str(result)
+                        logging.info(f"list req result : {response.encode('utf-8')}")
                         client_socket.send(response.encode("utf-8"))
 
                     elif action_dict["action"] == "listen":

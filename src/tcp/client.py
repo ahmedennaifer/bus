@@ -1,10 +1,8 @@
 from src.errors.tcp import ClientAlreadyConnectedException
-from src.errors.topic import TopicNotFoundException
 from src.messages.messages import Message
-from typing import Dict, List
+from typing import Dict
 
 
-import time
 import socket
 import json
 import logging

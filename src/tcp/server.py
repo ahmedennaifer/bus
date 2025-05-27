@@ -6,6 +6,8 @@ import json
 from threading import Thread
 from src.registry.topic_registry import TopicRegistry
 from src.messages.messages import Message
+from src.messages.messages import EmptyMessage
+
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -69,8 +71,16 @@ class Server:
                         topic_name = action_dict.get("name")
                         try:
                             msgs = self._topic_registry.listen_to_topic(topic_name)
-                            messages_str = "\n".join([str(msg) for msg in msgs])
-                            client_socket.send(messages_str.encode("utf-8"))
+                            print("msgs: ", msgs)
+                            for msg in msgs:
+                                if isinstance(msg, EmptyMessage):
+                                    logging.info("Empty Message, Skipping....")
+                                    continue
+                                while msgs:
+                                    msg_json = msg.to_json()
+                                    client_socket.send(msg_json.encode("utf-8"))
+                                    msgs.remove(msg)
+
                         except Exception as e:
                             logging.error(
                                 f"Failed sending response to client {client_socket}: {e}"

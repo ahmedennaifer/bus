@@ -19,7 +19,7 @@ class Server:
         topic_registry: TopicRegistry,
         host="localhost",
         port=8080,
-        buffer_size=1024,
+        buffer_size=4096,
     ):
         self._host = host
         self._port = port

@@ -62,7 +62,7 @@ class Client:
         try:
             self._socket.send(encoded_action)
             logging.info(f"[CLIENT] Client sent action: {action}")
-            response = self._socket.recv(1024).decode("utf-8")
+            response = self._socket.recv(4096).decode("utf-8")
             print(f"[RESPONSE] {response}")
             logging.debug(f"[SERVER] {response}")
         except Exception as e:
@@ -99,7 +99,7 @@ class Client:
         try:
             self._socket.send(encoded_msg)
             logging.info(f"[CLIENT] Client sent msg: {msg}")
-            response = self._socket.recv(1024).decode("utf-8")
+            response = self._socket.recv(4096).decode("utf-8")
             logging.info(f"[SERVER] {response}")
         except Exception as e:
             logging.error(f"Error sending message: {e}")
